@@ -60,7 +60,18 @@ app.get('/', (req, res) => {
     res.send(`hello, ${req.session.username}. Your login will expire ${expires}`)
 })
 
-app.listen(HTTP_PORT, () => console.log(`HTTP server running on port ${HTTP_PORT}`))
+app.listen(HTTP_PORT, () => {
+    console.log(`HTTP server running on port ${HTTP_PORT}`);
+
+    // Create db tables if they do not exist
+    Object.keys(Models).forEach(model => {
+        const Model = Models[model];
+        console.log(`Syncing model ${model}...`);
+        Model.sync()
+        .then(() => `Model ${model} synchronized.`)
+        .catch(error => console.error(`Error synchronizing model ${model}`, error))
+    })
+})
 
 if ( RUN_HTTPS ) {
     https.createServer({
@@ -70,15 +81,6 @@ if ( RUN_HTTPS ) {
     }, app)
     .listen(HTTPS_PORT, () => {
         console.log(`HTTPS server running on port ${HTTPS_PORT}`);
-
-        // Create db tables
-        Object.keys(Models).forEach(model => {
-            const Model = Models[model];
-            console.log(`Syncing model ${model}...`);
-            Model.sync()
-            .then(() => `Model ${model} synchronized.`)
-            .catch(error => console.error(`Error synchronizing model ${model}`, error))
-        })
     });
 }
 
