@@ -13,7 +13,6 @@ Environment variables the boilerplate uses to run by default:
 - **HTTPS_PORT_VAR**: The environment variable used to obtain the TLS/SSL port for the server. (HTTPS will run on 3333 if not in unset)
 - **HTTPS_KEY_FILE**: The full path to the OpenSSL key (PEM) file (defaults to key.pem in the repository if not set).
 - **HTTPS_CERT_FILE**: The full path the OpenSSL certificate (PEM) file. (default to cert.pem in repository if not set)
-- **HTTPS_PASSPHRASE**: The passphrase for the OpenSSL key. (defaults to "localhost" if not set)
 - **SSO_AUTH_REDIRECT_URL**: The FQDN URL to provide to OpenId Connect (in you application), that will handle the return callback after authentication. (e.g. https://localhost:3333/auth [the default] for local or https://myapp.example.com/auth for production)
 - **OPENID_ISSUER_URI**: The issuer URL endpoint for your OpenId connect service. (defaults to IBM staging oidc URL)
 - **OPENID_AUTHORIZATION_URI**: The authorization URL endpoint for your OpenId connect service. (defaults to IBM staging oidc URL)
@@ -39,6 +38,7 @@ module.exports = {
     dbUserName: '<database connection username>',
     dbPassword: '<database connection password>',
     sessionSecret: '<session secret string to generate session>',
+    httpsPassphrase: '<passphrase for TLS/SSL OpenSSL key>',
 };
 ```
 

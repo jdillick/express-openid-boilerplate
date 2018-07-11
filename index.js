@@ -14,8 +14,6 @@ const HTTPS_PORT = process.env[HTTPS_PORT_VAR] || 3333;
 const RUN_HTTPS = 'RUN_HTTPS' in process.env || process.env.NODE_ENV !== 'production';
 const HTTPS_KEY_FILE = process.env.HTTPS_KEY_FILE || path.resolve(__dirname, 'key.pem');
 const HTTPS_CERT_FILE = process.env.HTTPS_CERT_FILE || path.resolve(__dirname, 'cert.pem');
-const HTTPS_PASSPHRASE = process.env.HTTPS_PASSPHRASE || 'localhost';
-
 const { sequelize, Models } = require('./src/models');
 
 // redirect_uri needed by ./src/auth module
@@ -34,6 +32,7 @@ const {
 
 const {
     sessionSecret: secret,
+    httpsPassphrase,
 } = require(credsModuleFile);
 
 let sessionOptions = {
@@ -74,11 +73,16 @@ app.listen(HTTP_PORT, () => {
 })
 
 if ( RUN_HTTPS ) {
-    https.createServer({
-        key: fs.readFileSync(HTTPS_KEY_FILE),
-        cert: fs.readFileSync(HTTPS_CERT_FILE),
-        passphrase: HTTPS_PASSPHRASE,
-    }, app)
+    https.createServer(Object.assign(
+        {},
+        {
+            key: fs.readFileSync(HTTPS_KEY_FILE),
+            cert: fs.readFileSync(HTTPS_CERT_FILE),
+        },
+        httpsPassphrase ? {
+            passphrase: httpsPassphrase,
+        } : {}
+    ), app)
     .listen(HTTPS_PORT, () => {
         console.log(`HTTPS server running on port ${HTTPS_PORT}`);
     });
