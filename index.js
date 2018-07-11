@@ -55,8 +55,8 @@ app.use(authMiddleware);
 app.get('/auth', handleAuthRoute);
 
 app.get('/', (req, res) => {
-    const expires = moment(req.session.expires).from(moment());
-    res.send(`hello, ${req.session.username}. Your login will expire ${expires}`)
+    const { expires = new Date(), username = 'unknown' } = req.session || {};
+    res.send(`hello, ${username}. Your login will expire ${moment(expires).from(moment())}`)
 })
 
 app.listen(HTTP_PORT, () => {

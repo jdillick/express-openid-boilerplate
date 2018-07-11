@@ -71,7 +71,7 @@ module.exports = ({ Session, redirect_uri }) => {
     });
 
     return {
-        middleWare: Session => (req, res, next) => {
+        middleWare: (req, res, next) => {
             if ( req.session && req.session.expires && moment().isBefore(moment(req.session.expires))) {
                 next();
                 return;
@@ -117,14 +117,14 @@ module.exports = ({ Session, redirect_uri }) => {
                 next();
             }
         },
-        handleAuthRoute: Session => (req, res) => {
+        handleAuthRoute: (req, res) => {
             if ( req.session && req.session.expires && moment().isBefore(moment(req.session.expires))) {
                 res.redirect('/');
                 return;
             }
 
             client
-                .authorizationCallback(redirectURI, req.query)
+                .authorizationCallback(redirect_uri, req.query)
                 .then(({access_token, expires_at }) => {
                     req.session.access_token = access_token;
                     req.session.expires = moment(new Date(expires_at * 1000)).toISOString();
