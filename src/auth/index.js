@@ -72,47 +72,38 @@ module.exports = ({ Session, redirect_uri }) => {
 
     return {
         middleWare: (req, res, next) => {
-            if ( req.session && req.session.expires && moment().isBefore(moment(req.session.expires))) {
-                next();
-                return;
-            }
-
             if ( req.path !== '/auth' ) {
-                // Clean up expired sessions
-                delete req.session.username;
-                delete req.session.access_token;
-                delete req.session.expires;
-
                 Session.destroy({
                     where: {
                         expires: {
                             [Op.lt]: new Date(),
                         }
                     }
-                });
-
-                Session.findOne({
-                    where: {
-                        session_id: {
-                            [Op.eq]: req.session.id,
-                        },
-                    }
                 })
-                .then(session => {
-                    if (session) {
-                        req.session.username = session.username,
-                        req.session.access_token = session.access_token;
-                        req.session.expires = session.expires;
-                        next();
-                    } else {
-                        res.redirect(authURL);
-                    }
+                .then(() => {
+                    Session.findOne({
+                        where: {
+                            session_id: {
+                                [Op.eq]: req.session.id
+                            },
+                        }
+                    })
+                    .then(session => {
+                        if (session) {
+                            req.session.username = session.username,
+                            req.session.access_token = session.access_token;
+                            req.session.expires = session.expires;
+                            next();
+                        } else {
+                            res.redirect(authURL);
+                        }
+                    })
+                    .catch(error => {
+                        res.status(500).send('Error occured loading user information.');
+                        console.error(error);
+                    })
                 })
-                .catch(error => {
-                    res.status(500).send('Error occured loading user information.');
-                    console.error(error);
-                })
-
+                .catch(error => console.log('Error removing stale sessions.'))
             } else {
                 next();
             }
@@ -127,7 +118,7 @@ module.exports = ({ Session, redirect_uri }) => {
                 .authorizationCallback(redirect_uri, req.query)
                 .then(({access_token, expires_at }) => {
                     req.session.access_token = access_token;
-                    req.session.expires = moment(new Date(expires_at * 1000)).toISOString();
+                    req.session.expires = moment().add(1, 'day').toDate();
                     return client.userinfo(access_token)
                 })
                 .then(({sub}) => {
